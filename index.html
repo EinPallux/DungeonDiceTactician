@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Dice Tactician</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white">
+    
+    <!-- Landing Page -->
+    <div id="landing-page" class="container mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">
+                Dungeon Dice Tactician
+            </h1>
+            <p class="text-xl text-gray-300">Choose your fate. Roll your destiny.</p>
+        </div>
+
+        <!-- Class Selection -->
+        <div id="class-selection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            <!-- Classes will be dynamically inserted here -->
+        </div>
+
+        <!-- Statistics Display -->
+        <div id="stats-display" class="mt-12 text-center">
+            <h3 class="text-2xl font-bold mb-4">Your Best Runs</h3>
+            <div id="best-runs" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                <!-- Best run stats will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="hidden container mx-auto px-4 py-8">
+        <!-- Top Bar -->
+        <div class="bg-black bg-opacity-50 rounded-lg p-4 mb-6">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <span class="text-gray-400">Round:</span>
+                        <span id="round-number" class="text-2xl font-bold text-yellow-400 ml-2">1</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400">Gold:</span>
+                        <span id="gold-amount" class="text-2xl font-bold text-yellow-400 ml-2">0</span>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button id="pause-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition">Pause</button>
+                    <button id="surrender-btn" class="px-4 py-2 bg-red-700 hover:bg-red-600 rounded transition">Surrender</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Player Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Your Hero</h2>
+                    <div id="player-info" class="space-y-3">
+                        <div class="text-center">
+                            <p class="text-lg font-semibold" id="player-class-name">Blade Dancer</p>
+                        </div>
+                        <div class="bg-black bg-opacity-30 rounded p-3">
+                            <div class="flex justify-between mb-1">
+                                <span>HP:</span>
+                                <span id="player-hp-text" class="font-bold">100/100</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                                <div id="player-hp-bar" class="bg-gradient-to-r from-green-500 to-green-400 h-4 transition-all duration-500" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-300">Attack Bonus:</span>
+                                <span id="player-attack-bonus" class="text-red-400 font-bold">+0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-300">Defense Bonus:</span>
+                                <span id="player-defense-bonus" class="text-blue-400 font-bold">+0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-300">Momentum:</span>
+                                <span id="player-momentum" class="text-yellow-400 font-bold">0</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-xs text-gray-300 mb-2">Active Effects:</p>
+                            <div id="player-effects" class="flex flex-wrap gap-2 min-h-[2rem]">
+                                <!-- Active effects will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combat Area -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Enemy Section -->
+                <div class="bg-gradient-to-br from-red-900 to-red-700 rounded-lg p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Enemy</h2>
+                    <div id="enemy-info" class="space-y-3">
+                        <div class="text-center">
+                            <p class="text-xl font-bold" id="enemy-name">Goblin</p>
+                            <p class="text-sm text-gray-300" id="enemy-type">Minion</p>
+                        </div>
+                        <div class="bg-black bg-opacity-30 rounded p-3">
+                            <div class="flex justify-between mb-1">
+                                <span>HP:</span>
+                                <span id="enemy-hp-text" class="font-bold">50/50</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                                <div id="enemy-hp-bar" class="bg-gradient-to-r from-red-500 to-red-400 h-4 transition-all duration-500" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="text-center text-sm">
+                            <p class="text-gray-300">Next Action: <span id="enemy-next-action" class="text-yellow-400 font-bold">Attack (15)</span></p>
+                        </div>
+                        <div id="enemy-effects" class="flex flex-wrap gap-2 justify-center min-h-[2rem]">
+                            <!-- Enemy effects will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dice Rolling Area -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Your Dice</h3>
+                        <button id="roll-dice-btn" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition transform hover:scale-105">
+                            Roll Dice
+                        </button>
+                    </div>
+                    <div id="dice-container" class="flex flex-wrap gap-4 justify-center min-h-[120px] items-center">
+                        <!-- Dice will appear here -->
+                    </div>
+                    <div class="mt-4 text-center text-sm text-gray-400">
+                        <p>Rerolls remaining: <span id="rerolls-remaining" class="text-yellow-400 font-bold">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Action Assignment Area -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-2xl">
+                    <h3 class="text-xl font-bold mb-4">Assign Your Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Attack Slot -->
+                        <div class="bg-red-900 bg-opacity-40 rounded-lg p-4 border-2 border-red-500">
+                            <h4 class="font-bold text-center mb-3 text-red-300">⚔️ Attack</h4>
+                            <div id="attack-slot" class="min-h-[80px] flex items-center justify-center dropzone">
+                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                            </div>
+                            <p class="text-center mt-2 text-sm">Total: <span id="attack-total" class="font-bold text-red-400">0</span></p>
+                        </div>
+
+                        <!-- Defense Slot -->
+                        <div class="bg-blue-900 bg-opacity-40 rounded-lg p-4 border-2 border-blue-500">
+                            <h4 class="font-bold text-center mb-3 text-blue-300">🛡️ Defense</h4>
+                            <div id="defense-slot" class="min-h-[80px] flex items-center justify-center dropzone">
+                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                            </div>
+                            <p class="text-center mt-2 text-sm">Total: <span id="defense-total" class="font-bold text-blue-400">0</span></p>
+                        </div>
+
+                        <!-- Special Slot -->
+                        <div class="bg-purple-900 bg-opacity-40 rounded-lg p-4 border-2 border-purple-500">
+                            <h4 class="font-bold text-center mb-3 text-purple-300">✨ Special</h4>
+                            <div id="special-slot" class="min-h-[80px] flex items-center justify-center dropzone">
+                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                            </div>
+                            <p class="text-center mt-2 text-sm" id="special-status">Not Ready</p>
+                        </div>
+                    </div>
+
+                    <button id="execute-turn-btn" class="w-full mt-6 px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-lg transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Execute Turn
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combat Log -->
+        <div class="mt-6 bg-gray-800 rounded-lg p-4 shadow-2xl">
+            <h3 class="text-lg font-bold mb-2">Combat Log</h3>
+            <div id="combat-log" class="h-32 overflow-y-auto space-y-1 text-sm font-mono">
+                <p class="text-gray-400">Combat begins...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merchant Modal -->
+    <div id="merchant-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-br from-yellow-900 to-yellow-700 rounded-lg p-8 max-w-4xl w-full shadow-2xl">
+            <h2 class="text-3xl font-bold mb-2 text-center">🧙 Traveling Merchant 🧙</h2>
+            <p class="text-center mb-6 text-yellow-200">Choose wisely, adventurer!</p>
+            <div class="mb-4 text-center">
+                <span class="text-2xl">💰 Gold: <span id="merchant-gold" class="font-bold">0</span></span>
+            </div>
+            <div id="merchant-items" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Merchant items will be inserted here -->
+            </div>
+            <button id="close-merchant-btn" class="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
+                Continue Adventure
+            </button>
+        </div>
+    </div>
+
+    <!-- End Run Modal -->
+    <div id="end-run-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-8 max-w-2xl w-full shadow-2xl border-4 border-red-600">
+            <h2 class="text-4xl font-bold mb-4 text-center text-red-400">Your Journey Ends</h2>
+            <div id="run-stats" class="space-y-3 mb-6 text-lg">
+                <!-- Run statistics will be inserted here -->
+            </div>
+            <div class="flex gap-4">
+                <button id="restart-btn" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition">
+                    New Run
+                </button>
+                <button id="main-menu-btn" class="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full shadow-2xl">
+            <h2 class="text-3xl font-bold mb-6 text-center">Game Paused</h2>
+            <div class="space-y-4">
+                <button id="resume-btn" class="w-full px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition">
+                    Resume
+                </button>
+                <button id="pause-main-menu-btn" class="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
