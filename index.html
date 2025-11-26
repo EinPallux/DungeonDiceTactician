@@ -4,242 +4,1047 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dungeon Dice Tactician</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Landing Page -->
-    <div id="landing-page" class="container mx-auto px-4 py-8">
-        <div class="text-center mb-12">
-            <h1 class="text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">
-                Dungeon Dice Tactician
-            </h1>
-            <p class="text-xl text-gray-300">Choose your fate. Roll your destiny.</p>
-        </div>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap');
 
-        <!-- Class Selection -->
-        <div id="class-selection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            <!-- Classes will be dynamically inserted here -->
-        </div>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0;
+            user-select: none;
+            overflow-x: hidden;
+        }
 
-        <!-- Statistics Display -->
-        <div id="stats-display" class="mt-12 text-center">
-            <h3 class="text-2xl font-bold mb-4">Your Best Runs</h3>
-            <div id="best-runs" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                <!-- Best run stats will be shown here -->
+        h1, h2, h3, .fantasy-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Dice Styling */
+        .die-face {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .die-face:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .die-face.selected {
+            border-color: #fbbf24; /* Amber 400 */
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Slot Styling */
+        .slot {
+            width: 72px;
+            height: 72px;
+            border: 2px dashed #475569;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        
+        .slot.active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .floating { animation: float 3s ease-in-out infinite; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pop-in { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- AUDIO ELEMENTS (Placeholders for logic) -->
+    <!-- We simulate audio visually in this restricted environment -->
+
+    <!-- ================= SCREENS ================= -->
+
+    <!-- 1. LANDING SCREEN -->
+    <div id="landing-screen" class="absolute inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center p-4">
+        <h1 class="text-5xl md:text-7xl text-amber-400 mb-2 text-center text-shadow">Dungeon Dice Tactician</h1>
+        <p class="text-slate-400 mb-12 text-lg">Roll. Assign. Survive.</p>
+        
+        <h2 class="text-2xl mb-6">Choose Your Class</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+            <!-- Blade Dancer -->
+            <div onclick="game.startGame('blade-dancer')" class="bg-slate-800 p-6 rounded-xl border border-slate-700 hover:border-red-500 hover:bg-slate-750 cursor-pointer transition group">
+                <div class="text-4xl text-red-500 mb-4 group-hover:scale-110 transition duration-300"><i class="fa-solid fa-khanda"></i></div>
+                <h3 class="text-xl font-bold mb-2">Blade Dancer</h3>
+                <p class="text-sm text-slate-400 mb-4">Master of offense and critical strikes.</p>
+                <ul class="text-xs text-slate-300 space-y-1 list-disc pl-4">
+                    <li><strong class="text-red-400">Passive:</strong> +1 DMG per consecutive attack round.</li>
+                    <li><strong class="text-amber-400">Special:</strong> Needs 2 <i class="fa-solid fa-burst"></i>. Deals 300% Damage.</li>
+                </ul>
+            </div>
+
+            <!-- Geomancer -->
+            <div onclick="game.startGame('geomancer')" class="bg-slate-800 p-6 rounded-xl border border-slate-700 hover:border-emerald-500 hover:bg-slate-750 cursor-pointer transition group">
+                <div class="text-4xl text-emerald-500 mb-4 group-hover:scale-110 transition duration-300"><i class="fa-solid fa-mountain"></i></div>
+                <h3 class="text-xl font-bold mb-2">Geomancer</h3>
+                <p class="text-sm text-slate-400 mb-4">Master of defense and elemental combos.</p>
+                <ul class="text-xs text-slate-300 space-y-1 list-disc pl-4">
+                    <li><strong class="text-emerald-400">Passive:</strong> Roll Earth, Stone, & Crystal for +10 ATK/DEF.</li>
+                    <li><strong class="text-amber-400">Special:</strong> +25 DEF for the next round.</li>
+                </ul>
+            </div>
+
+            <!-- Shadow Priest -->
+            <div onclick="game.startGame('shadow-priest')" class="bg-slate-800 p-6 rounded-xl border border-slate-700 hover:border-purple-500 hover:bg-slate-750 cursor-pointer transition group">
+                <div class="text-4xl text-purple-500 mb-4 group-hover:scale-110 transition duration-300"><i class="fa-solid fa-skull-crossbones"></i></div>
+                <h3 class="text-xl font-bold mb-2">Shadow Priest</h3>
+                <p class="text-sm text-slate-400 mb-4">Harness darkness for power.</p>
+                <ul class="text-xs text-slate-300 space-y-1 list-disc pl-4">
+                    <li><strong class="text-purple-400">Passive:</strong> Unspent symbols grant +2 Magic DMG.</li>
+                    <li><strong class="text-amber-400">Special:</strong> Sacrifice 5 HP to deal +20 DMG.</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="hidden container mx-auto px-4 py-8">
-        <!-- Top Bar -->
-        <div class="bg-black bg-opacity-50 rounded-lg p-4 mb-6">
-            <div class="flex justify-between items-center flex-wrap gap-4">
-                <div class="flex items-center gap-6">
-                    <div>
-                        <span class="text-gray-400">Round:</span>
-                        <span id="round-number" class="text-2xl font-bold text-yellow-400 ml-2">1</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400">Gold:</span>
-                        <span id="gold-amount" class="text-2xl font-bold text-yellow-400 ml-2">0</span>
-                    </div>
+    <!-- 2. GAME SCREEN -->
+    <div id="game-screen" class="hidden flex-col h-full w-full max-w-6xl mx-auto p-2 md:p-4">
+        
+        <!-- Top HUD -->
+        <header class="flex justify-between items-center bg-slate-800/80 p-3 rounded-lg border border-slate-700 mb-4 shadow-lg backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col">
+                    <span class="text-xs text-slate-400 uppercase tracking-widest">Class</span>
+                    <span id="hud-class" class="font-bold text-lg fantasy-font text-amber-400">Hero</span>
                 </div>
-                <div class="flex gap-4">
-                    <button id="pause-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition">Pause</button>
-                    <button id="surrender-btn" class="px-4 py-2 bg-red-700 hover:bg-red-600 rounded transition">Surrender</button>
+                <div class="h-8 w-px bg-slate-600"></div>
+                <div class="flex flex-col">
+                    <span class="text-xs text-slate-400 uppercase tracking-widest">Round</span>
+                    <span id="hud-round" class="font-bold text-lg">1</span>
                 </div>
             </div>
-        </div>
+            
+            <div class="flex items-center gap-2 md:gap-6">
+                <div class="flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-slate-700">
+                    <i class="fa-solid fa-coins text-yellow-500"></i>
+                    <span id="hud-gold" class="font-mono font-bold">0</span>
+                </div>
+                <button onclick="game.openMenu()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-bars text-xl"></i></button>
+            </div>
+        </header>
 
-        <!-- Main Game Area -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Player Section -->
-            <div class="lg:col-span-1">
-                <div class="bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg p-6 shadow-2xl">
-                    <h2 class="text-2xl font-bold mb-4 text-center">Your Hero</h2>
-                    <div id="player-info" class="space-y-3">
-                        <div class="text-center">
-                            <p class="text-lg font-semibold" id="player-class-name">Blade Dancer</p>
+        <!-- Main Arena -->
+        <main class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 min-h-0">
+            
+            <!-- Player Stats -->
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-green-500" id="player-hp-bar"></div>
+                
+                <div class="text-center md:text-left z-10">
+                    <h3 class="text-2xl font-bold fantasy-font text-green-400">You</h3>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <i class="fa-solid fa-heart text-red-500"></i>
+                        <span id="player-hp" class="text-3xl font-bold">100</span>
+                        <span class="text-sm text-slate-400">/ <span id="player-max-hp">100</span> HP</span>
+                    </div>
+                    
+                    <div class="mt-4 space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span>Base Attack</span>
+                            <span id="player-base-atk" class="text-blue-300 font-mono">0</span>
                         </div>
-                        <div class="bg-black bg-opacity-30 rounded p-3">
-                            <div class="flex justify-between mb-1">
-                                <span>HP:</span>
-                                <span id="player-hp-text" class="font-bold">100/100</span>
-                            </div>
-                            <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-                                <div id="player-hp-bar" class="bg-gradient-to-r from-green-500 to-green-400 h-4 transition-all duration-500" style="width: 100%"></div>
-                            </div>
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span>Base Defense</span>
+                            <span id="player-base-def" class="text-blue-300 font-mono">0</span>
                         </div>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-300">Attack Bonus:</span>
-                                <span id="player-attack-bonus" class="text-red-400 font-bold">+0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-300">Defense Bonus:</span>
-                                <span id="player-defense-bonus" class="text-blue-400 font-bold">+0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-300">Momentum:</span>
-                                <span id="player-momentum" class="text-yellow-400 font-bold">0</span>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-xs text-gray-300 mb-2">Active Effects:</p>
-                            <div id="player-effects" class="flex flex-wrap gap-2 min-h-[2rem]">
-                                <!-- Active effects will appear here -->
-                            </div>
+                        <div id="passive-indicator" class="mt-4 p-2 bg-slate-900/50 rounded text-xs text-slate-300 italic">
+                            Passive Active!
                         </div>
                     </div>
+                </div>
+                
+                <!-- Player Avatar/Icon -->
+                <div class="self-center mt-4 md:mt-0 text-slate-700 text-9xl opacity-20 absolute bottom-4 right-4">
+                    <i id="player-icon" class="fa-solid fa-user-shield"></i>
                 </div>
             </div>
 
-            <!-- Combat Area -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Enemy Section -->
-                <div class="bg-gradient-to-br from-red-900 to-red-700 rounded-lg p-6 shadow-2xl">
-                    <h2 class="text-2xl font-bold mb-4 text-center">Enemy</h2>
-                    <div id="enemy-info" class="space-y-3">
-                        <div class="text-center">
-                            <p class="text-xl font-bold" id="enemy-name">Goblin</p>
-                            <p class="text-sm text-gray-300" id="enemy-type">Minion</p>
-                        </div>
-                        <div class="bg-black bg-opacity-30 rounded p-3">
-                            <div class="flex justify-between mb-1">
-                                <span>HP:</span>
-                                <span id="enemy-hp-text" class="font-bold">50/50</span>
-                            </div>
-                            <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-                                <div id="enemy-hp-bar" class="bg-gradient-to-r from-red-500 to-red-400 h-4 transition-all duration-500" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="text-center text-sm">
-                            <p class="text-gray-300">Next Action: <span id="enemy-next-action" class="text-yellow-400 font-bold">Attack (15)</span></p>
-                        </div>
-                        <div id="enemy-effects" class="flex flex-wrap gap-2 justify-center min-h-[2rem]">
-                            <!-- Enemy effects will appear here -->
+            <!-- Combat Log / Center -->
+            <div class="bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-hidden flex flex-col relative">
+                <div class="absolute top-0 left-0 w-full bg-slate-800 text-center py-1 text-xs text-slate-400 uppercase tracking-widest font-bold">Battle Log</div>
+                <div id="combat-log" class="mt-6 flex-1 overflow-y-auto space-y-2 text-sm font-mono scroll-smooth pb-2">
+                    <div class="text-slate-500 italic">Combat started...</div>
+                </div>
+            </div>
+
+            <!-- Enemy Stats -->
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-full h-1 bg-red-500" id="enemy-hp-bar"></div>
+                
+                <div class="text-center md:text-right z-10">
+                    <h3 id="enemy-name" class="text-2xl font-bold fantasy-font text-red-400">Goblin</h3>
+                    <div class="flex items-baseline gap-2 mt-2 justify-center md:justify-end">
+                        <span id="enemy-hp" class="text-3xl font-bold">30</span>
+                        <span class="text-sm text-slate-400">/ <span id="enemy-max-hp">30</span> HP</span>
+                        <i class="fa-solid fa-heart-crack text-red-500"></i>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-red-900/20 rounded border border-red-900/50">
+                        <p class="text-xs text-red-300 uppercase tracking-wide mb-1">Intent</p>
+                        <div id="enemy-intent" class="flex items-center justify-center md:justify-end gap-2 font-bold text-white">
+                            <i class="fa-solid fa-sword"></i> Attacks for 5
                         </div>
                     </div>
                 </div>
 
-                <!-- Dice Rolling Area -->
-                <div class="bg-gray-800 rounded-lg p-6 shadow-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold">Your Dice</h3>
-                        <button id="roll-dice-btn" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition transform hover:scale-105">
-                            Roll Dice
-                        </button>
+                <!-- Enemy Avatar -->
+                <div class="self-center mt-4 md:mt-0 text-slate-700 text-9xl opacity-20 absolute bottom-4 left-4">
+                    <i id="enemy-icon" class="fa-solid fa-dragon"></i>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Dice Board (Bottom) -->
+        <footer class="bg-slate-800 rounded-xl p-4 border border-slate-700 shadow-2xl relative">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Dice Pool -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs text-slate-400 uppercase tracking-widest">Available Dice</h4>
+                        <div class="flex gap-2">
+                             <button id="btn-roll" onclick="game.rollDicePhase()" class="px-4 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded text-sm font-bold shadow-lg transition transform active:scale-95">Roll Dice</button>
+                             <button id="btn-reroll" onclick="game.useReroll()" class="hidden px-3 py-1 bg-slate-600 hover:bg-slate-500 text-xs rounded border border-slate-500">Reroll (<span id="reroll-count">0</span>)</button>
+                        </div>
                     </div>
-                    <div id="dice-container" class="flex flex-wrap gap-4 justify-center min-h-[120px] items-center">
-                        <!-- Dice will appear here -->
-                    </div>
-                    <div class="mt-4 text-center text-sm text-gray-400">
-                        <p>Rerolls remaining: <span id="rerolls-remaining" class="text-yellow-400 font-bold">0</span></p>
+                    <div id="dice-container" class="flex flex-wrap gap-3 min-h-[80px] p-2 bg-slate-900/50 rounded-lg border border-slate-700/50 items-center justify-center md:justify-start">
+                        <!-- Dice generated here -->
+                        <span class="text-slate-500 text-sm italic">Press Roll to start round...</span>
                     </div>
                 </div>
 
-                <!-- Action Assignment Area -->
-                <div class="bg-gray-800 rounded-lg p-6 shadow-2xl">
-                    <h3 class="text-xl font-bold mb-4">Assign Your Actions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Assignment Slots -->
+                <div class="flex flex-col justify-between">
+                    <h4 class="text-xs text-slate-400 uppercase tracking-widest mb-2">Combat Slots</h4>
+                    <div class="flex gap-4 justify-around md:justify-start">
+                        
                         <!-- Attack Slot -->
-                        <div class="bg-red-900 bg-opacity-40 rounded-lg p-4 border-2 border-red-500">
-                            <h4 class="font-bold text-center mb-3 text-red-300">⚔️ Attack</h4>
-                            <div id="attack-slot" class="min-h-[80px] flex items-center justify-center dropzone">
-                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                        <div class="flex flex-col items-center gap-1 group">
+                            <div id="slot-atk" onclick="game.toggleSlot('atk')" class="slot border-red-900/50 hover:border-red-500/50 cursor-pointer">
+                                <i class="fa-solid fa-swords text-red-500/20 text-2xl pointer-events-none"></i>
                             </div>
-                            <p class="text-center mt-2 text-sm">Total: <span id="attack-total" class="font-bold text-red-400">0</span></p>
+                            <span class="text-xs font-bold text-red-400">ATTACK</span>
+                            <span id="preview-atk" class="text-xs text-slate-400 h-4">0 Dmg</span>
                         </div>
 
                         <!-- Defense Slot -->
-                        <div class="bg-blue-900 bg-opacity-40 rounded-lg p-4 border-2 border-blue-500">
-                            <h4 class="font-bold text-center mb-3 text-blue-300">🛡️ Defense</h4>
-                            <div id="defense-slot" class="min-h-[80px] flex items-center justify-center dropzone">
-                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                        <div class="flex flex-col items-center gap-1 group">
+                            <div id="slot-def" onclick="game.toggleSlot('def')" class="slot border-blue-900/50 hover:border-blue-500/50 cursor-pointer">
+                                <i class="fa-solid fa-shield text-blue-500/20 text-2xl pointer-events-none"></i>
                             </div>
-                            <p class="text-center mt-2 text-sm">Total: <span id="defense-total" class="font-bold text-blue-400">0</span></p>
+                            <span class="text-xs font-bold text-blue-400">DEFEND</span>
+                            <span id="preview-def" class="text-xs text-slate-400 h-4">0 Blk</span>
                         </div>
 
                         <!-- Special Slot -->
-                        <div class="bg-purple-900 bg-opacity-40 rounded-lg p-4 border-2 border-purple-500">
-                            <h4 class="font-bold text-center mb-3 text-purple-300">✨ Special</h4>
-                            <div id="special-slot" class="min-h-[80px] flex items-center justify-center dropzone">
-                                <p class="text-gray-500 text-sm">Drop dice here</p>
+                        <div class="flex flex-col items-center gap-1 group">
+                            <div id="slot-sp" onclick="game.toggleSlot('sp')" class="slot border-purple-900/50 hover:border-purple-500/50 cursor-pointer">
+                                <i class="fa-solid fa-sparkles text-purple-500/20 text-2xl pointer-events-none"></i>
                             </div>
-                            <p class="text-center mt-2 text-sm" id="special-status">Not Ready</p>
+                            <span class="text-xs font-bold text-purple-400">SPECIAL</span>
+                            <span id="preview-sp" class="text-xs text-slate-400 h-4 italic">Inactive</span>
                         </div>
-                    </div>
 
-                    <button id="execute-turn-btn" class="w-full mt-6 px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold text-lg transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        Execute Turn
+                    </div>
+                    
+                    <button id="btn-end-turn" onclick="game.resolveTurn()" disabled class="mt-4 w-full py-3 bg-slate-700 text-slate-400 font-bold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider">
+                        End Turn
                     </button>
                 </div>
             </div>
-        </div>
+        </footer>
+    </div>
 
-        <!-- Combat Log -->
-        <div class="mt-6 bg-gray-800 rounded-lg p-4 shadow-2xl">
-            <h3 class="text-lg font-bold mb-2">Combat Log</h3>
-            <div id="combat-log" class="h-32 overflow-y-auto space-y-1 text-sm font-mono">
-                <p class="text-gray-400">Combat begins...</p>
+    <!-- 3. MERCHANT MODAL -->
+    <div id="merchant-modal" class="hidden fixed inset-0 z-40 bg-black/90 flex items-center justify-center p-4">
+        <div class="bg-slate-800 w-full max-w-2xl rounded-xl border-2 border-amber-600 shadow-2xl p-6 relative">
+            <h2 class="text-3xl text-amber-400 font-bold mb-1 text-center">Traveling Merchant</h2>
+            <p class="text-center text-slate-400 mb-6 text-sm">"Got some rare goods, stranger..."</p>
+            
+            <div id="merchant-items" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <!-- Items injected via JS -->
+            </div>
+
+            <div class="flex justify-center mt-6">
+                <button onclick="game.closeMerchant()" class="px-6 py-2 border border-slate-600 rounded hover:bg-slate-700 transition">Leave Shop</button>
             </div>
         </div>
     </div>
 
-    <!-- Merchant Modal -->
-    <div id="merchant-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div class="bg-gradient-to-br from-yellow-900 to-yellow-700 rounded-lg p-8 max-w-4xl w-full shadow-2xl">
-            <h2 class="text-3xl font-bold mb-2 text-center">🧙 Traveling Merchant 🧙</h2>
-            <p class="text-center mb-6 text-yellow-200">Choose wisely, adventurer!</p>
-            <div class="mb-4 text-center">
-                <span class="text-2xl">💰 Gold: <span id="merchant-gold" class="font-bold">0</span></span>
-            </div>
-            <div id="merchant-items" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <!-- Merchant items will be inserted here -->
-            </div>
-            <button id="close-merchant-btn" class="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
-                Continue Adventure
-            </button>
+    <!-- 4. GAME OVER MODAL -->
+    <div id="game-over-modal" class="hidden fixed inset-0 z-50 bg-red-900/90 flex items-center justify-center p-4">
+        <div class="text-center">
+            <h1 class="text-6xl font-bold text-white mb-4 drop-shadow-lg">YOU DIED</h1>
+            <p id="death-stats" class="text-xl text-red-200 mb-8">Round: 5 | Gold: 20</p>
+            <button onclick="location.reload()" class="bg-white text-red-900 px-8 py-3 rounded-full font-bold hover:scale-105 transition shadow-xl">Try Again</button>
         </div>
     </div>
 
-    <!-- End Run Modal -->
-    <div id="end-run-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-8 max-w-2xl w-full shadow-2xl border-4 border-red-600">
-            <h2 class="text-4xl font-bold mb-4 text-center text-red-400">Your Journey Ends</h2>
-            <div id="run-stats" class="space-y-3 mb-6 text-lg">
-                <!-- Run statistics will be inserted here -->
-            </div>
-            <div class="flex gap-4">
-                <button id="restart-btn" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold transition">
-                    New Run
-                </button>
-                <button id="main-menu-btn" class="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
-                    Main Menu
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- SCRIPTS -->
+    <script>
+        /**
+         * DUNGEON DICE TACTICIAN - MAIN LOGIC
+         * Organized by Modules/Classes
+         */
 
-    <!-- Pause Modal -->
-    <div id="pause-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full shadow-2xl">
-            <h2 class="text-3xl font-bold mb-6 text-center">Game Paused</h2>
-            <div class="space-y-4">
-                <button id="resume-btn" class="w-full px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition">
-                    Resume
-                </button>
-                <button id="pause-main-menu-btn" class="w-full px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition">
-                    Main Menu
-                </button>
-            </div>
-        </div>
-    </div>
+        // --- CONSTANTS & DATA ---
+        
+        const DICE_TYPES = {
+            ATTACK: 'attack',
+            DEFENSE: 'defense',
+            MAGIC: 'magic',
+            CRIT: 'crit',
+            CLASS: 'class' // Special class symbol
+        };
 
-    <!-- Loading Scripts -->
-    <script type="module" src="js/main.js"></script>
+        const ICONS = {
+            [DICE_TYPES.ATTACK]: '<i class="fa-solid fa-sword text-red-400 text-2xl"></i>',
+            [DICE_TYPES.DEFENSE]: '<i class="fa-solid fa-shield-halved text-blue-400 text-2xl"></i>',
+            [DICE_TYPES.MAGIC]: '<i class="fa-solid fa-fire text-purple-400 text-2xl"></i>',
+            [DICE_TYPES.CRIT]: '<i class="fa-solid fa-burst text-yellow-400 text-2xl"></i>',
+            
+            // Class specific
+            'blade': '<i class="fa-solid fa-khanda text-slate-200 text-2xl"></i>',
+            'earth': '<i class="fa-solid fa-mountain text-emerald-400 text-2xl"></i>',
+            'stone': '<i class="fa-solid fa-cubes text-slate-400 text-2xl"></i>',
+            'crystal': '<i class="fa-solid fa-gem text-cyan-400 text-2xl"></i>',
+            'darkness': '<i class="fa-solid fa-moon text-indigo-400 text-2xl"></i>'
+        };
+
+        const ENEMIES_DATA = [
+            { name: "Goblin Scavenger", hp: 30, atk: 5, icon: "fa-frog", pattern: "basic" },
+            { name: "Kobold Miner", hp: 45, atk: 7, icon: "fa-dungeon", pattern: "defensive" },
+            { name: "Orc Grunt", hp: 80, atk: 12, icon: "fa-hippo", pattern: "heavy" }, // Hippo as Orc placeholder
+            { name: "Cultist Acolyte", hp: 60, atk: 8, icon: "fa-user-secret", pattern: "charge" },
+            { name: "Stone Golem", hp: 120, atk: 6, icon: "fa-cube", pattern: "tank" },
+            { name: "Void Shade", hp: 50, atk: 15, icon: "fa-ghost", pattern: "burst" },
+            { name: "Dungeon Boss", hp: 200, atk: 20, icon: "fa-dragon", pattern: "boss" }
+        ];
+
+        // --- UTILS ---
+        const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // --- CLASSES ---
+
+        class DiceFace {
+            constructor(type, value, subType = null) {
+                this.type = type;
+                this.value = value;
+                this.subType = subType; // For class specifics like 'earth'
+                this.id = Math.random().toString(36).substr(2, 9);
+            }
+        }
+
+        class Die {
+            constructor(faces) {
+                this.faces = faces; // Array of 6 DiceFace objects
+                this.currentFace = null;
+                this.id = Math.random().toString(36).substr(2, 9);
+            }
+
+            roll() {
+                this.currentFace = this.faces[Math.floor(Math.random() * this.faces.length)];
+                return this.currentFace;
+            }
+        }
+
+        class Item {
+            constructor(name, description, cost, effectFn) {
+                this.name = name;
+                this.description = description;
+                this.cost = cost;
+                this.effect = effectFn;
+            }
+        }
+
+        class Entity {
+            constructor(name, maxHp) {
+                this.name = name;
+                this.maxHp = maxHp;
+                this.hp = maxHp;
+                this.baseAtk = 0;
+                this.baseDef = 0;
+                this.effects = [];
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+                if (this.hp < 0) this.hp = 0;
+                return amount; // Return actual dmg taken logic could go here
+            }
+
+            heal(amount) {
+                this.hp += amount;
+                if (this.hp > this.maxHp) this.hp = this.maxHp;
+            }
+
+            isDead() {
+                return this.hp <= 0;
+            }
+        }
+
+        class Player extends Entity {
+            constructor(className) {
+                super("Hero", 100);
+                this.className = className;
+                this.gold = 0;
+                this.dicePool = [];
+                this.rerolls = 1;
+                this.consecutiveAttacks = 0; // Blade Dancer passive
+                
+                this.setupClass();
+            }
+
+            setupClass() {
+                // Initialize default dice based on class
+                const basicAtk = new DiceFace(DICE_TYPES.ATTACK, 3);
+                const strongAtk = new DiceFace(DICE_TYPES.ATTACK, 5);
+                const basicDef = new DiceFace(DICE_TYPES.DEFENSE, 3);
+                
+                let classDice = [];
+
+                if (this.className === 'blade-dancer') {
+                    // High Atk, Crit
+                    const crit = new DiceFace(DICE_TYPES.CRIT, 0); // Value 0, serves as multiplier trigger
+                    const blade = new DiceFace(DICE_TYPES.CLASS, 2, 'blade');
+                    
+                    // 3 Dice
+                    for(let i=0; i<3; i++) {
+                        classDice.push(new Die([basicAtk, basicAtk, strongAtk, basicDef, crit, blade]));
+                    }
+                    this.baseAtk = 1;
+                } 
+                else if (this.className === 'geomancer') {
+                    // Earth, Stone, Crystal
+                    const earth = new DiceFace(DICE_TYPES.CLASS, 1, 'earth');
+                    const stone = new DiceFace(DICE_TYPES.CLASS, 1, 'stone');
+                    const crystal = new DiceFace(DICE_TYPES.CLASS, 1, 'crystal');
+                    
+                    // 3 Dice, slightly more defensive
+                    for(let i=0; i<3; i++) {
+                        classDice.push(new Die([basicAtk, basicDef, basicDef, earth, stone, crystal]));
+                    }
+                    this.baseDef = 2;
+                } 
+                else if (this.className === 'shadow-priest') {
+                    // Darkness
+                    const darkness = new DiceFace(DICE_TYPES.CLASS, 1, 'darkness');
+                    const magic = new DiceFace(DICE_TYPES.MAGIC, 4);
+                    
+                    for(let i=0; i<3; i++) {
+                        classDice.push(new Die([basicAtk, basicDef, darkness, darkness, magic, magic]));
+                    }
+                    this.hp = 80; // Lower HP
+                    this.maxHp = 80;
+                }
+
+                this.dicePool = classDice;
+            }
+
+            rollAll() {
+                this.dicePool.forEach(d => d.roll());
+            }
+
+            addDie(die) {
+                this.dicePool.push(die);
+            }
+        }
+
+        class Enemy extends Entity {
+            constructor(level) {
+                // Scaling logic
+                const template = ENEMIES_DATA[Math.min(level - 1, ENEMIES_DATA.length - 1)] || ENEMIES_DATA[ENEMIES_DATA.length-1];
+                const scale = 1 + (level * 0.15); // 15% scaling per level
+                
+                super(template.name, Math.floor(template.hp * scale));
+                
+                this.icon = template.icon;
+                this.atk = Math.floor(template.atk * scale);
+                this.pattern = template.pattern;
+                this.patternStep = 0;
+            }
+
+            getNextAction() {
+                // Simple AI patterns
+                this.patternStep++;
+                
+                if (this.pattern === 'charge') {
+                    if (this.patternStep % 3 === 0) return { type: 'attack', value: this.atk * 2.5, text: 'Heavy Strike!' };
+                    return { type: 'wait', value: 0, text: 'Charging...' };
+                }
+                
+                if (this.pattern === 'defensive') {
+                    if (this.patternStep % 2 === 0) return { type: 'defend', value: this.atk, text: 'Fortify' };
+                    return { type: 'attack', value: this.atk, text: 'Strike' };
+                }
+
+                // Default
+                return { type: 'attack', value: this.atk, text: `Attacks for ${this.atk}` };
+            }
+        }
+
+        // --- GAME MANAGER ---
+
+        class GameManager {
+            constructor() {
+                this.round = 0;
+                this.state = 'MENU'; // MENU, COMBAT, MERCHANT, END
+                this.player = null;
+                this.enemy = null;
+                this.selectedDie = null;
+                this.slots = { atk: [], def: [], sp: [] }; // Array of Die objects
+                this.enemyIntent = null;
+                this.tempBuffs = { atk: 0, def: 0 };
+            }
+
+            startGame(className) {
+                this.player = new Player(className);
+                this.round = 1;
+                this.toggleScreen('game-screen');
+                this.startRound();
+            }
+
+            async startRound() {
+                // Check Merchant Spawn (Every 3 rounds)
+                if (this.round > 1 && (this.round - 1) % 3 === 0 && this.state !== 'MERCHANT_VISITED') {
+                    this.openMerchant();
+                    return;
+                }
+                if (this.state === 'MERCHANT_VISITED') this.state = 'COMBAT';
+
+                // Spawn Enemy (if dead or null)
+                if (!this.enemy || this.enemy.isDead()) {
+                    this.enemy = new Enemy(Math.floor(this.round / 2) + 1);
+                    this.log(`A wild ${this.enemy.name} appeared!`);
+                }
+
+                // Reset Turn Data
+                this.player.rerolls = 1 + (this.hasItem('Ring of Chance') ? 1 : 0);
+                this.tempBuffs = { atk: 0, def: 0 };
+                this.slots = { atk: [], def: [], sp: [] };
+                this.selectedDie = null;
+                
+                // Determine Enemy Intent
+                this.enemyIntent = this.enemy.getNextAction();
+
+                // UI Update
+                this.updateUI();
+                
+                // Explicitly clear slot visuals from previous round
+                this.updateDiceVisuals();
+                // Render empty hand initially
+                this.renderDice([]); 
+                
+                document.getElementById('btn-roll').classList.remove('hidden');
+                document.getElementById('btn-reroll').classList.add('hidden');
+                document.getElementById('btn-end-turn').classList.remove('bg-green-600', 'text-white');
+                document.getElementById('btn-end-turn').classList.add('bg-slate-700', 'text-slate-400');
+                document.getElementById('btn-end-turn').innerText = "End Turn";
+                document.getElementById('btn-end-turn').disabled = true;
+
+                // Handle Class Specific Start of Round logic
+                if (this.player.className === 'geomancer' && this.player.effects.includes('geo_shield')) {
+                    this.tempBuffs.def += 25;
+                    this.player.effects = this.player.effects.filter(e => e !== 'geo_shield');
+                    this.log("Geomancer's Stone Skin grants +25 Defense!");
+                }
+                if (this.player.className === 'shadow-priest' && this.player.effects.includes('shadow_charge')) {
+                    this.tempBuffs.atk += 2; // Magic dmg boost implemented as generic atk for simplicity
+                    this.player.effects = this.player.effects.filter(e => e !== 'shadow_charge');
+                    this.log("Shadows empower your magic (+2 DMG)!");
+                }
+            }
+
+            rollDicePhase() {
+                this.player.rollAll();
+                
+                // Check Geomancer Passive immediately on roll
+                if (this.player.className === 'geomancer') {
+                    const types = this.player.dicePool.map(d => d.currentFace.subType);
+                    if (types.includes('earth') && types.includes('stone') && types.includes('crystal')) {
+                        this.log("Elemental Resonance! +10 ATK/DEF");
+                        this.tempBuffs.atk += 10;
+                        this.tempBuffs.def += 10;
+                    }
+                }
+
+                this.renderDice(this.player.dicePool);
+                document.getElementById('btn-roll').classList.add('hidden');
+                document.getElementById('btn-reroll').classList.remove('hidden');
+                document.getElementById('btn-end-turn').disabled = false;
+                this.updateUI();
+            }
+
+            useReroll() {
+                if (this.player.rerolls > 0) {
+                    this.player.rerolls--;
+                    // Only reroll unassigned dice
+                    const unassigned = this.player.dicePool.filter(d => 
+                        !this.slots.atk.includes(d) && 
+                        !this.slots.def.includes(d) && 
+                        !this.slots.sp.includes(d)
+                    );
+                    
+                    if(unassigned.length === 0) {
+                        this.log("No dice in hand to reroll!");
+                        this.player.rerolls++; // Refund
+                        return;
+                    }
+
+                    unassigned.forEach(d => d.roll());
+                    this.renderDice(this.player.dicePool); // Re-render all to show updates
+                    this.updateUI();
+                }
+            }
+
+            // Logic to move dice between Hand and Slots
+            selectDie(dieId) {
+                const die = this.player.dicePool.find(d => d.id === dieId);
+                if (this.selectedDie === die) {
+                    this.selectedDie = null; // Deselect
+                } else {
+                    this.selectedDie = die;
+                }
+                // Only visual update needed, triggers hand render to show selection
+                this.updateDiceVisuals();
+            }
+
+            toggleSlot(type) {
+                // If die is selected, try to place it
+                if (this.selectedDie) {
+                    // Remove from other slots if present
+                    ['atk', 'def', 'sp'].forEach(t => {
+                         const idx = this.slots[t].indexOf(this.selectedDie);
+                         if(idx > -1) this.slots[t].splice(idx, 1);
+                    });
+                    
+                    // Add to new slot
+                    this.slots[type].push(this.selectedDie);
+                    this.selectedDie = null; // Deselect
+                } 
+                // If no die selected, remove last added to this slot (LIFO for simplicity)
+                else {
+                    if (this.slots[type].length > 0) {
+                        this.slots[type].pop();
+                    }
+                }
+                
+                this.updateDiceVisuals();
+                this.calculatePreview();
+            }
+
+            calculatePreview() {
+                // Helper to calc stats based on slots
+                let atk = this.player.baseAtk + this.tempBuffs.atk;
+                let def = this.player.baseDef + this.tempBuffs.def;
+                
+                // Sum Dice
+                this.slots.atk.forEach(d => {
+                    if (d.currentFace.type === DICE_TYPES.ATTACK) atk += d.currentFace.value;
+                    if (d.currentFace.type === DICE_TYPES.MAGIC) atk += d.currentFace.value;
+                    if (d.currentFace.type === DICE_TYPES.CLASS && d.currentFace.value > 0) atk += d.currentFace.value;
+                });
+                
+                this.slots.def.forEach(d => {
+                    if (d.currentFace.type === DICE_TYPES.DEFENSE) def += d.currentFace.value;
+                    if (d.currentFace.type === DICE_TYPES.CLASS) def += d.currentFace.value;
+                });
+
+                // Blade Dancer Passive
+                if (this.player.className === 'blade-dancer') atk += this.player.consecutiveAttacks;
+
+                // SPECIAL LOGIC PREVIEW
+                const spDice = this.slots.sp.map(d => d.currentFace);
+                let spActive = false;
+
+                if (this.player.className === 'blade-dancer') {
+                    // Needs 2 Crits
+                    const crits = spDice.filter(f => f.type === DICE_TYPES.CRIT).length;
+                    if (crits >= 2) {
+                        spActive = true;
+                        atk *= 3; // 300% Dmg
+                    }
+                } else if (this.player.className === 'shadow-priest') {
+                    // Needs nothing, just activation cost (HP)
+                    // We check if slot has ANY dice to signify intent
+                    if (this.slots.sp.length > 0) {
+                         spActive = true;
+                         atk += 20;
+                    }
+                } else if (this.player.className === 'geomancer') {
+                     // Just activation
+                     if (this.slots.sp.length > 0) {
+                         spActive = true;
+                         // Effect is next round, just visual here
+                     }
+                }
+
+                document.getElementById('preview-atk').innerText = `${Math.floor(atk)} Dmg`;
+                document.getElementById('preview-def').innerText = `${def} Blk`;
+                document.getElementById('preview-sp').innerText = spActive ? "Active!" : "Inactive";
+                
+                if (spActive) document.getElementById('preview-sp').className = "text-xs text-amber-400 font-bold h-4 pop-in";
+                else document.getElementById('preview-sp').className = "text-xs text-slate-400 h-4";
+
+                // Update Button State
+                const btn = document.getElementById('btn-end-turn');
+                btn.classList.remove('bg-slate-700', 'text-slate-400');
+                btn.classList.add('bg-green-600', 'text-white', 'shadow-lg', 'hover:bg-green-500');
+                btn.innerText = "Execute Turn";
+
+                return { atk, def, spActive };
+            }
+
+            async resolveTurn() {
+                document.getElementById('btn-end-turn').disabled = true;
+                const stats = this.calculatePreview();
+                
+                // 1. Apply Special Costs
+                if (stats.spActive && this.player.className === 'shadow-priest') {
+                    this.player.takeDamage(5);
+                    this.log("Shadow Priest sacrificed 5 HP for power!", "text-purple-400");
+                }
+
+                // 2. Player Attack
+                await sleep(500);
+                if (stats.atk > 0) {
+                    this.enemy.takeDamage(stats.atk);
+                    this.log(`You dealt ${Math.floor(stats.atk)} damage!`, "text-amber-400");
+                    
+                    // Blade Dancer Passive Tracking
+                    this.player.consecutiveAttacks++;
+                    
+                    // Shake anim
+                    const enemyEl = document.getElementById('enemy-icon').parentElement;
+                    enemyEl.classList.add('shake');
+                    setTimeout(() => enemyEl.classList.remove('shake'), 500);
+                } else {
+                    if (this.player.className === 'blade-dancer') this.player.consecutiveAttacks = 0;
+                }
+                this.updateUI();
+
+                // Check Enemy Death
+                if (this.enemy.isDead()) {
+                    await sleep(800);
+                    this.log(`${this.enemy.name} defeated!`, "text-green-400");
+                    this.winRound();
+                    return;
+                }
+
+                // 3. Enemy Action
+                await sleep(800);
+                let enemyDmg = 0;
+                if (this.enemyIntent.type === 'attack') {
+                    enemyDmg = this.enemyIntent.value;
+                    const damageTaken = Math.max(0, enemyDmg - stats.def);
+                    if (damageTaken > 0) {
+                        this.player.takeDamage(damageTaken);
+                        this.log(`${this.enemy.name} hit you for ${damageTaken} dmg (${stats.def} blocked).`, "text-red-400");
+                        
+                        // Shake player
+                        const pEl = document.getElementById('player-icon').parentElement;
+                        pEl.classList.add('shake');
+                        setTimeout(() => pEl.classList.remove('shake'), 500);
+                    } else {
+                        this.log(`Blocked attack completely!`, "text-blue-400");
+                    }
+                } else {
+                    this.log(`${this.enemy.name} ${this.enemyIntent.type}ed.`);
+                }
+                this.updateUI();
+
+                // Check Player Death
+                if (this.player.isDead()) {
+                    this.gameOver();
+                    return;
+                }
+
+                // 4. Passives Cleanup
+                if (this.player.className === 'shadow-priest') {
+                    // Unspent symbols -> +2 Magic next round
+                    // If darkness symbols in hand (not in slots)
+                    const hand = this.player.dicePool.filter(d => 
+                        !this.slots.atk.includes(d) && 
+                        !this.slots.def.includes(d) && 
+                        !this.slots.sp.includes(d)
+                    );
+                    const darknessCount = hand.filter(d => d.currentFace.subType === 'darkness').length;
+                    if (darknessCount > 0) {
+                        this.player.effects.push('shadow_charge');
+                        this.log("Darkness gathers... (+2 Magic next round)");
+                    }
+                }
+
+                if (stats.spActive && this.player.className === 'geomancer') {
+                    this.player.effects.push('geo_shield');
+                }
+
+                await sleep(1000);
+                this.round++;
+                this.startRound();
+            }
+
+            winRound() {
+                const reward = rnd(10, 25) + (this.round * 2);
+                this.player.gold += reward;
+                this.log(`Gained ${reward} Gold.`);
+                this.enemy = null; // Prepare for next
+                this.round++;
+                setTimeout(() => this.startRound(), 1500);
+            }
+
+            gameOver() {
+                document.getElementById('death-stats').innerText = `Survived ${this.round} Rounds | Gold Collected: ${this.player.gold}`;
+                document.getElementById('game-over-modal').classList.remove('hidden');
+            }
+
+            // --- MERCHANT LOGIC ---
+            openMerchant() {
+                this.state = 'MERCHANT';
+                const container = document.getElementById('merchant-items');
+                container.innerHTML = '';
+
+                const pool = [
+                    new Item("Whetstone", "+1 Base Attack", 50, () => this.player.baseAtk++),
+                    new Item("Iron Plating", "+1 Base Defense", 50, () => this.player.baseDef++),
+                    new Item("Potion", "Heal 30 HP", 30, () => this.player.heal(30)),
+                    new Item("Lucky Charm", "+1 Reroll per round", 100, () => this.hasItem('Ring of Chance') ? null : this.player.inventory.push('Ring of Chance')), // Simplified logic
+                    new Item("Training", "Add Basic Die", 80, () => this.player.addDie(new Die([
+                        new DiceFace(DICE_TYPES.ATTACK, 3), new DiceFace(DICE_TYPES.ATTACK, 3),
+                        new DiceFace(DICE_TYPES.DEFENSE, 3), new DiceFace(DICE_TYPES.DEFENSE, 3),
+                        new DiceFace(DICE_TYPES.ATTACK, 4), new DiceFace(DICE_TYPES.DEFENSE, 4)
+                    ])))
+                ];
+
+                // Pick 3 random
+                const shop = [];
+                for(let i=0; i<3; i++) shop.push(pool[rnd(0, pool.length-1)]);
+
+                shop.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = "bg-slate-700 p-4 rounded border border-slate-600 flex flex-col gap-2";
+                    el.innerHTML = `
+                        <h4 class="font-bold text-amber-400">${item.name}</h4>
+                        <p class="text-xs text-slate-300 flex-1">${item.description}</p>
+                        <button class="w-full py-1 bg-amber-600 rounded text-sm font-bold mt-2 hover:bg-amber-500 disabled:opacity-50"
+                            onclick="game.buyItem('${item.name}', ${item.cost})">
+                            Buy (${item.cost}g)
+                        </button>
+                    `;
+                    // Bind click manually to pass object closure if needed, but string ID is easier here
+                    // Actually, let's attach the item object to the button
+                    el.querySelector('button').onclick = () => {
+                         if (this.player.gold >= item.cost) {
+                             this.player.gold -= item.cost;
+                             item.effect();
+                             this.log(`Bought ${item.name}`);
+                             this.updateUI();
+                             el.remove(); // Remove from shop
+                         } else {
+                             this.log("Not enough gold!", "text-red-500");
+                         }
+                    };
+                    container.appendChild(el);
+                });
+
+                document.getElementById('merchant-modal').classList.remove('hidden');
+            }
+
+            closeMerchant() {
+                document.getElementById('merchant-modal').classList.add('hidden');
+                this.state = 'MERCHANT_VISITED';
+                this.startRound();
+            }
+            
+            hasItem(name) { return false; /* Placeholder for complex inv */ }
+
+            // --- UI HELPERS ---
+
+            log(msg, colorClass = "text-slate-300") {
+                const logEl = document.getElementById('combat-log');
+                const entry = document.createElement('div');
+                entry.className = `border-b border-slate-800 pb-1 ${colorClass} pop-in`;
+                entry.innerHTML = `> ${msg}`;
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+
+            toggleScreen(id) {
+                document.querySelectorAll('body > div').forEach(d => {
+                    if(!d.id.includes('modal')) d.classList.add('hidden');
+                });
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById(id).classList.add('flex');
+            }
+
+            updateUI() {
+                if(!this.player) return;
+
+                // Player
+                document.getElementById('player-hp').innerText = Math.floor(this.player.hp);
+                document.getElementById('player-max-hp').innerText = this.player.maxHp;
+                document.getElementById('player-hp-bar').style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
+                document.getElementById('player-base-atk').innerText = this.player.baseAtk;
+                document.getElementById('player-base-def').innerText = this.player.baseDef;
+                document.getElementById('hud-gold').innerText = this.player.gold;
+                document.getElementById('hud-round').innerText = this.round;
+                document.getElementById('hud-class').innerText = this.player.className.replace('-', ' ');
+                document.getElementById('reroll-count').innerText = this.player.rerolls;
+
+                if(this.player.effects.length > 0) document.getElementById('passive-indicator').classList.remove('hidden');
+                else document.getElementById('passive-indicator').classList.add('hidden');
+
+                // Enemy
+                if (this.enemy) {
+                    document.getElementById('enemy-name').innerText = this.enemy.name;
+                    document.getElementById('enemy-hp').innerText = Math.floor(this.enemy.hp);
+                    document.getElementById('enemy-max-hp').innerText = this.enemy.maxHp;
+                    document.getElementById('enemy-hp-bar').style.width = `${(this.enemy.hp / this.enemy.maxHp) * 100}%`;
+                    document.getElementById('enemy-icon').className = `fa-solid ${this.enemy.icon}`;
+                    
+                    if (this.enemyIntent) {
+                        const icon = this.enemyIntent.type === 'attack' ? 'fa-sword' : (this.enemyIntent.type === 'defend' ? 'fa-shield' : 'fa-clock');
+                        document.getElementById('enemy-intent').innerHTML = `<i class="fa-solid ${icon}"></i> ${this.enemyIntent.text}`;
+                    }
+                }
+            }
+
+            renderDice(diceList) {
+                const container = document.getElementById('dice-container');
+                container.innerHTML = '';
+                
+                diceList.forEach(die => {
+                    if (!die.currentFace) return;
+                    
+                    // Check if die is assigned
+                    const isAssigned = this.slots.atk.includes(die) || this.slots.def.includes(die) || this.slots.sp.includes(die);
+                    if (isAssigned) return; // Don't render in hand if assigned
+
+                    const face = die.currentFace;
+                    const el = document.createElement('div');
+                    el.className = `die-face bg-slate-800 ${this.selectedDie === die ? 'selected' : ''}`;
+                    
+                    // Specific border colors based on type
+                    let borderClass = 'border-slate-600';
+                    if (face.type === DICE_TYPES.ATTACK) borderClass = 'border-red-900';
+                    if (face.type === DICE_TYPES.DEFENSE) borderClass = 'border-blue-900';
+                    if (face.type === DICE_TYPES.MAGIC) borderClass = 'border-purple-900';
+                    if (face.type === DICE_TYPES.CRIT) borderClass = 'border-yellow-900';
+
+                    el.classList.add(borderClass);
+
+                    let content = ICONS[face.subType] || ICONS[face.type];
+                    if (face.value > 0) {
+                        content += `<span class="absolute bottom-1 right-1 text-xs font-bold text-white bg-black/50 px-1 rounded">${face.value}</span>`;
+                    }
+
+                    el.innerHTML = content;
+                    el.onclick = () => this.selectDie(die.id);
+                    container.appendChild(el);
+                });
+
+                // REMOVED RECURSIVE CALL HERE
+            }
+
+            updateDiceVisuals() {
+                // Determine visuals for slots based on this.slots data
+                // Clear slots first
+                ['atk', 'def', 'sp'].forEach(type => {
+                    const slotEl = document.getElementById(`slot-${type}`);
+                    slotEl.innerHTML = ''; // Clear icon
+                    
+                    // If no dice, show placeholder icon back
+                    if (this.slots[type].length === 0) {
+                        let icon = 'fa-swords';
+                        let color = 'text-red-500/20';
+                        if(type==='def') { icon='fa-shield'; color='text-blue-500/20'; }
+                        if(type==='sp') { icon='fa-sparkles'; color='text-purple-500/20'; }
+                        slotEl.innerHTML = `<i class="fa-solid ${icon} ${color} text-2xl pointer-events-none"></i>`;
+                        slotEl.classList.remove('active');
+                    } else {
+                        // Render Stacked Dice in slot
+                        // Simple visualization: Show top die, and count
+                        const die = this.slots[type][this.slots[type].length - 1]; // Top one
+                        const face = die.currentFace;
+                        let content = ICONS[face.subType] || ICONS[face.type];
+                        
+                        slotEl.innerHTML = `
+                            <div class="relative w-full h-full flex items-center justify-center">
+                                ${content}
+                                <span class="absolute top-0 right-0 bg-slate-900 text-xs px-1 rounded-bl">${this.slots[type].length}</span>
+                            </div>
+                        `;
+                        slotEl.classList.add('active');
+                    }
+                });
+
+                // Re-render hand to update selection state
+                this.renderDice(this.player.dicePool);
+            }
+        }
+
+        // Initialize
+        const game = new GameManager();
+        
+        // Debug
+        // game.startGame('blade-dancer');
+
+    </script>
 </body>
 </html>
